@@ -15,12 +15,12 @@ client = elasticsearch.Elasticsearch("localhost:9200")
 
 def main():
     encode = "utf-8"
-    dirs = glob.glob("../wikipedia-articles/*")
+    dirs = sorted(glob.glob("../wikipedia-articles/*"))
     for d in dirs:
-        print(d)
-        files = glob.glob(d+"/*")
+        print("[Input Directory] " + d)
+        files = sorted(glob.glob(d+"/*"))
         for input_path in files:
-            print(input_path)
+            print("[Input File] " + input_path)
 
             # read content
             with codecs.open(input_path, "r", encode) as f:
@@ -38,12 +38,14 @@ def main():
                     r'<doc id="(.+)" url="(.+)" title="(.+)">', out_text)
                 if m is not None:
                     id = m.group(1)
-                    url = m.group(2)
+                    url = 'https://ja.wikipedia.org/wiki' + m.group(2)
                     title = m.group(3)
                     start_content = True
                     skip_line = True
                 elif re.match(r'</doc>', out_text) is not None:
-                    print("{0} {1} {2}".format(id, url, title.encode('utf-8')))
+                    if int(id) % 10000 == 0:
+                        print("Doc: {0} {1} {2}".format(
+                            id, url, title.encode('utf-8')))
 
                     doc = {}
                     doc['id'] = id
